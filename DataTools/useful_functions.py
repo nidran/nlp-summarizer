@@ -5,34 +5,37 @@
 # ================ IMPORTS ================
 from __future__ import print_function, division
 import sys
-sys.path.insert(0, "/Users/edcollins/Documents/CS/4thYearProject/Code")
+sys.path.insert(0, "/Users/arnabgupta/Documents/NYU/Coursework/Fall 21/2590 - Natural Language Processing/Project/scientific-paper-summarisation")
 from nltk.tokenize import sent_tokenize, word_tokenize
-from Dev.DataTools.Reader import Reader
-from Dev.DataTools.SentenceComparator import SentenceComparator
+from DataTools.Reader import Reader
+from DataTools.SentenceComparator import SentenceComparator
 from nltk.tokenize import sent_tokenize
 from collections import defaultdict
 from gensim.models import Word2Vec
-from Dev.Evaluation.rouge import Rouge
+from Evaluation.rouge import Rouge
 from operator import itemgetter
 import numpy as np
-import tensorflow as tf
+# import tensorflow as tf
 import re
 import os
 import string
-import dill
+# import dill
 import pickle
 import time
-import ujson as json
+# import ujson as json
 
 # =========================================
 
 # ================ CONFIG VARIABLES ================
 
 # The base directory of the project, from the root directory
-BASE_DIR = "/Users/edcollins/Documents/CS/4thYearProject/Code/Dev"
+BASE_DIR = "/Users/arnabgupta/Documents/NYU/Coursework/Fall 21/2590 - Natural Language Processing/Project/scientific-paper-summarisation/Dev"
+BASE_DIR = "/Users/arnabgupta/Documents/NYU/Coursework/Fall 21/2590 - Natural Language Processing/Project/scientific-paper-summarisation"
 
 # The path to the directory in which the papers are stored
 PAPER_SOURCE = BASE_DIR + "/Data/Papers/Full/Papers_With_Section_Titles/"
+PAPER_SOURCE = BASE_DIR + "/Data/Parsed_Papers/"
+PAPER_SOURCE_WH = BASE_DIR + "/Data/Parsed_wo_highlights/"
 
 # The source of the highlights - where each file in the directory contains the highlights for that paper
 HIGHLIGHT_SOURCE = BASE_DIR + "/Data/Papers/Sections/highlights/"
@@ -67,7 +70,7 @@ W2V_CLASSIFICATION_MODEL_LOC = BASE_DIR + "/Trained_Models/Word2Vec_Classifier/l
 TRAINING_DATA_WRITE_LOC = BASE_DIR + "/Data/Training_Data/"
 
 # Reads the stopwords as a set
-STOPWORDS = set(Reader().open_file(STOPWORD_SOURCE) + list(string.punctuation))
+# STOPWORDS = set(Reader().open_file(STOPWORD_SOURCE) + list(string.punctuation))
 
 # Counts how many papers there are in the paper directory
 NUMBER_OF_PAPERS = len([name for name in os.listdir(PAPER_SOURCE) if name.endswith(".txt")])
@@ -317,9 +320,9 @@ def read_in_paper(filename, sentences_as_lists=False, preserve_order=False):
     """
     paper_to_open = PAPER_SOURCE + filename
     paper_text = Reader().open_file_single_string(paper_to_open)
-    udata = paper_text.decode("utf-8")
-    paper = udata.encode("ascii", "ignore")
-    return paper_tokenize(paper, sentences_as_lists=sentences_as_lists, preserve_order=preserve_order)
+    # udata = paper_text.decode("utf-8")
+    # paper = udata.encode("ascii", "ignore")
+    return paper_tokenize(paper_text, sentences_as_lists=sentences_as_lists, preserve_order=preserve_order)
 
 
 def preprocess_sentence(sentence):
@@ -341,15 +344,15 @@ def read_stopwords():
     return set(common_words)
 
 
-def load_word2vec():
-    """
-    Loads the word2vec model used in this work.
-    :return: a word2vec model.
-    """
-    return Word2Vec.load(MODEL_SOURCE)
+# def load_word2vec():
+#     """
+#     Loads the word2vec model used in this work.
+#     :return: a word2vec model.
+#     """
+#     return Word2Vec.load(MODEL_SOURCE)
 
-# The word2vec model
-WORD2VEC = load_word2vec()
+# # The word2vec model
+# WORD2VEC = load_word2vec()
 
 
 def loading_bar(loading_section_size, count, total_number):
@@ -377,520 +380,520 @@ def loading_bar(loading_section_size, count, total_number):
     sys.stdout.flush()
 
 
-def count_words_across_all_papers(write_location=GLOBAL_WORDCOUNT_WRITE_LOC):
-    """
-    Counts how many different papers each words occurs in.
-    :return: nothing, but writes the wordcount dictionary to the disk.
-    """
-
-    # Count the number of papers to read and prepare the loading bar
-    num_files = len([name for name in os.listdir(PAPER_SOURCE) if name.endswith(".txt")])
-    loading_section_size = num_files / 30
-    count = 0
+# def count_words_across_all_papers(write_location=GLOBAL_WORDCOUNT_WRITE_LOC):
+#     """
+#     Counts how many different papers each words occurs in.
+#     :return: nothing, but writes the wordcount dictionary to the disk.
+#     """
+
+#     # Count the number of papers to read and prepare the loading bar
+#     num_files = len([name for name in os.listdir(PAPER_SOURCE) if name.endswith(".txt")])
+#     loading_section_size = num_files / 30
+#     count = 0
 
-    # The defaultdict to hold the global word count for the number of different papers each word occurs in
-    global_word_count = defaultdict(int)
+#     # The defaultdict to hold the global word count for the number of different papers each word occurs in
+#     global_word_count = defaultdict(int)
 
-    # The defaultdict to hold the total count of all words
-    global_total_word_count = defaultdict(int)
+#     # The defaultdict to hold the total count of all words
+#     global_total_word_count = defaultdict(int)
 
-    for filename in os.listdir(PAPER_SOURCE):
-        if filename.endswith(".txt"):
+#     for filename in os.listdir(PAPER_SOURCE):
+#         if filename.endswith(".txt"):
 
-            # Display the loading bar
-            loading_bar(loading_section_size, count, num_files)
-            count += 1
+#             # Display the loading bar
+#             loading_bar(loading_section_size, count, num_files)
+#             count += 1
 
-            # Read the paper
-            paper = read_in_paper(filename, sentences_as_lists=True)
+#             # Read the paper
+#             paper = read_in_paper(filename, sentences_as_lists=True)
 
-            # Get the paper's vocab
-            all_sections = [section for _, section in paper.iteritems()]
-            paper_words = [word for section in all_sections for sentence in section for word in sentence]
-            vocab = set(paper_words)
+#             # Get the paper's vocab
+#             all_sections = [section for _, section in paper.iteritems()]
+#             paper_words = [word for section in all_sections for sentence in section for word in sentence]
+#             vocab = set(paper_words)
 
-            # Add to the counter dict for words that occurred in this paper
-            for word in vocab:
-                global_word_count[word] += 1
+#             # Add to the counter dict for words that occurred in this paper
+#             for word in vocab:
+#                 global_word_count[word] += 1
 
-            # Add to the total counts dict
-            #for word in paper_words:
-            #    global_total_word_count[word] += 1
+#             # Add to the total counts dict
+#             #for word in paper_words:
+#             #    global_total_word_count[word] += 1
 
-    # Write the wordcount
-    with open(write_location + "document_wordcount.pkl", "wb") as f:
-        pickle.dump(global_word_count, f)
+#     # Write the wordcount
+#     with open(write_location + "document_wordcount.pkl", "wb") as f:
+#         pickle.dump(global_word_count, f)
 
-    #with open(GLOBAL_WORDCOUNT_WRITE_LOC + "global_total_wordcount.pkl", "wb") as f:
-    #    pickle.dump(global_total_word_count, f)
+#     #with open(GLOBAL_WORDCOUNT_WRITE_LOC + "global_total_wordcount.pkl", "wb") as f:
+#     #    pickle.dump(global_total_word_count, f)
 
 
-def load_global_word_count():
-    """
-    Loads the global word count dictionary of the number of different papers each word occurs in and the word count
-    dictionary of the total occurences of each word in the corpus.
-    :return: a tuple of these dictionaries
-    """
-    with open(GLOBAL_WORDCOUNT_WRITE_LOC + "global_wordcount.pkl", "rb") as f:
-        num_papers_words_occur_in = pickle.load(f)
+# def load_global_word_count():
+#     """
+#     Loads the global word count dictionary of the number of different papers each word occurs in and the word count
+#     dictionary of the total occurences of each word in the corpus.
+#     :return: a tuple of these dictionaries
+#     """
+#     with open(GLOBAL_WORDCOUNT_WRITE_LOC + "global_wordcount.pkl", "rb") as f:
+#         num_papers_words_occur_in = pickle.load(f)
 
-    with open(GLOBAL_WORDCOUNT_WRITE_LOC + "global_total_wordcount.pkl", "rb") as f:
-        global_word_count = pickle.load(f)
+#     with open(GLOBAL_WORDCOUNT_WRITE_LOC + "global_total_wordcount.pkl", "rb") as f:
+#         global_word_count = pickle.load(f)
 
-    return num_papers_words_occur_in, global_word_count
+#     return num_papers_words_occur_in, global_word_count
 
 
-def create_paper_dictionaries(filename="", readin=True, paper=None):
-    """
-    Creates the metadata data structures for a specific paper required to compute the extra features which are
-    appended to the sentence vector.
-    :param filename: the filename only, not the path, for the paper to create dictionaries for.
-    :return: a tuple of the metadata data structures for the paper.
-    """
+# def create_paper_dictionaries(filename="", readin=True, paper=None):
+#     """
+#     Creates the metadata data structures for a specific paper required to compute the extra features which are
+#     appended to the sentence vector.
+#     :param filename: the filename only, not the path, for the paper to create dictionaries for.
+#     :return: a tuple of the metadata data structures for the paper.
+#     """
 
-    if readin and filename != "":
-        # Read the paper in as a dictionary, keys are sections and values are the section text
-        paper = read_in_paper(filename)
+#     if readin and filename != "":
+#         # Read the paper in as a dictionary, keys are sections and values are the section text
+#         paper = read_in_paper(filename)
 
-    # Extract paper keyphrases
-    keyphrases = set(filter(None, " ".join(paper["KEYPHRASES"].lower().split("\n")).split(" ")))
+#     # Extract paper keyphrases
+#     keyphrases = set(filter(None, " ".join(paper["KEYPHRASES"].lower().split("\n")).split(" ")))
 
-    # Get the paper's vocab
-    full_paper = " ".join([val for _, val in paper.iteritems()]).lower()
-    paper_words = word_tokenize(full_paper)
-    vocab = set(paper_words)
+#     # Get the paper's vocab
+#     full_paper = " ".join([val for _, val in paper.iteritems()]).lower()
+#     paper_words = word_tokenize(full_paper)
+#     vocab = set(paper_words)
 
-    # Create a bag of words for the paper
-    paper_bag_of_words = defaultdict(int)
-    for word in paper_words:
-        paper_bag_of_words[word] += 1
+#     # Create a bag of words for the paper
+#     paper_bag_of_words = defaultdict(int)
+#     for word in paper_words:
+#         paper_bag_of_words[word] += 1
 
-    # Get the title words
-    title_words = set([x.lower() for x in word_tokenize(paper["MAIN-TITLE"]) if x not in STOPWORDS])
+#     # Get the title words
+#     title_words = set([x.lower() for x in word_tokenize(paper["MAIN-TITLE"]) if x not in STOPWORDS])
 
-    return keyphrases, vocab, paper_bag_of_words, title_words
+#     return keyphrases, vocab, paper_bag_of_words, title_words
 
 
-def calculate_tf_idf(sentence, global_count_of_papers_words_occur_in, paper_bag_of_words):
-    """
-    Calculates the tf-idf score for a sentence based on all of the papers.
-    :param sentence: the sentence to calculate the score for, as a list of words
-    :param global_count_of_papers_words_occur_in: a dictionary of the form (word: number of papers the word occurs in)
-    :param paper_bag_of_words: the bag of words representation for a paper
-    :return: the tf-idf score of the sentence
-    """
-    bag_of_words = paper_bag_of_words
+# def calculate_tf_idf(sentence, global_count_of_papers_words_occur_in, paper_bag_of_words):
+#     """
+#     Calculates the tf-idf score for a sentence based on all of the papers.
+#     :param sentence: the sentence to calculate the score for, as a list of words
+#     :param global_count_of_papers_words_occur_in: a dictionary of the form (word: number of papers the word occurs in)
+#     :param paper_bag_of_words: the bag of words representation for a paper
+#     :return: the tf-idf score of the sentence
+#     """
+#     bag_of_words = paper_bag_of_words
 
-    sentence_tf_idf = 0
+#     sentence_tf_idf = 0
 
-    length = 0
+#     length = 0
 
-    for word in sentence:
+#     for word in sentence:
 
-        if word in STOPWORDS:
-            continue
+#         if word in STOPWORDS:
+#             continue
 
-        # Get the number of documents containing this word - the idf denominator (1 is added to prevent division by 0)
-        docs_containing_word = global_count_of_papers_words_occur_in[word] + 1
+#         # Get the number of documents containing this word - the idf denominator (1 is added to prevent division by 0)
+#         docs_containing_word = global_count_of_papers_words_occur_in[word] + 1
 
-        # Count of word in this paper - the tf score
-        count_word = bag_of_words[word]
+#         # Count of word in this paper - the tf score
+#         count_word = bag_of_words[word]
 
-        idf = np.log(NUMBER_OF_PAPERS / docs_containing_word)
+#         idf = np.log(NUMBER_OF_PAPERS / docs_containing_word)
 
-        #word_tf_idf = (1 + np.log(count_word)) * idf
+#         #word_tf_idf = (1 + np.log(count_word)) * idf
 
-        word_tf_idf = count_word * idf
+#         word_tf_idf = count_word * idf
 
-        sentence_tf_idf += word_tf_idf
+#         sentence_tf_idf += word_tf_idf
 
-        length += 1
+#         length += 1
 
-    if length == 0:
-        return 0
-    else:
-        sentence_tf_idf = sentence_tf_idf / length
-        return sentence_tf_idf
+#     if length == 0:
+#         return 0
+#     else:
+#         sentence_tf_idf = sentence_tf_idf / length
+#         return sentence_tf_idf
 
 
-def calculate_keyphrase_score(sentence, keyphrases):
-    """
-    Calculates the "keyphrase score" - which is the number of author defined keyphrases that the sentence contains.
-    :param sentence: the sentence to calculate the score for as a list of words
-    :param keyphrases: the keyphrases of the paper
-    :return: the number of keyphrases used in the sentence
-    """
+# def calculate_keyphrase_score(sentence, keyphrases):
+#     """
+#     Calculates the "keyphrase score" - which is the number of author defined keyphrases that the sentence contains.
+#     :param sentence: the sentence to calculate the score for as a list of words
+#     :param keyphrases: the keyphrases of the paper
+#     :return: the number of keyphrases used in the sentence
+#     """
 
-    score = 0
+#     score = 0
 
-    for word in sentence:
-        if word in STOPWORDS:
-            continue
+#     for word in sentence:
+#         if word in STOPWORDS:
+#             continue
 
-        if word in keyphrases:
-            score += 1
+#         if word in keyphrases:
+#             score += 1
 
-    return score
+#     return score
 
 
-def calculate_title_score(sentence, title):
-    """
-    Calculates the "title score" - which is the number of non-stopword words from the title the sentence contains.
-    :param sentence: the sentence to calculate the score for as a list of words
-    :param title: the non-stopword words from the title, as a set
-    :return: the number of non-stopword words from the title used in the sentence
-    """
+# def calculate_title_score(sentence, title):
+#     """
+#     Calculates the "title score" - which is the number of non-stopword words from the title the sentence contains.
+#     :param sentence: the sentence to calculate the score for as a list of words
+#     :param title: the non-stopword words from the title, as a set
+#     :return: the number of non-stopword words from the title used in the sentence
+#     """
 
-    score = 0
+#     score = 0
 
-    for word in sentence:
-        if word in STOPWORDS:
-            continue
+#     for word in sentence:
+#         if word in STOPWORDS:
+#             continue
 
-        if word in title:
-            score += 1
+#         if word in title:
+#             score += 1
 
-    return score
+#     return score
 
 
-def calculate_bag_of_words(paper_string):
-    """
-    Calculates the bag of words representation of a paper and returns a defaultdict.
-    :param paper_string: the paper in string representation.
-    :return: the paper's bag of words representation as a defaultdict.
-    """
-    bow = defaultdict(int)
-    for word in paper_string.split():
-        bow[word] += 1
+# def calculate_bag_of_words(paper_string):
+#     """
+#     Calculates the bag of words representation of a paper and returns a defaultdict.
+#     :param paper_string: the paper in string representation.
+#     :return: the paper's bag of words representation as a defaultdict.
+#     """
+#     bow = defaultdict(int)
+#     for word in paper_string.split():
+#         bow[word] += 1
 
-    return bow
+#     return bow
 
 
-def bag_of_words_score(sentence, paper_bag_of_words):
-    """
-    Calculates the score for a sentence based on the bag of words representation of the paper.
-    :param sentence: the sentence to calculate the score for, as a list of words
-    :param paper_bag_of_words: the bag of words representation of the paper
-    :return: the bag of words score for the sentence
-    """
+# def bag_of_words_score(sentence, paper_bag_of_words):
+#     """
+#     Calculates the score for a sentence based on the bag of words representation of the paper.
+#     :param sentence: the sentence to calculate the score for, as a list of words
+#     :param paper_bag_of_words: the bag of words representation of the paper
+#     :return: the bag of words score for the sentence
+#     """
 
-    # Get the bag of words for this sentence
-    bag_of_words = paper_bag_of_words
+#     # Get the bag of words for this sentence
+#     bag_of_words = paper_bag_of_words
 
-    # Calculate the score, which is done by finding the number of times each non-stopword word from the sentence occurs
-    # in the article and summing these for each word, divided by the number of non-stopword words in the sentence.
-    score = 0
-    count = 0
+#     # Calculate the score, which is done by finding the number of times each non-stopword word from the sentence occurs
+#     # in the article and summing these for each word, divided by the number of non-stopword words in the sentence.
+#     score = 0
+#     count = 0
 
-    for word in sentence:
-        if word in STOPWORDS:
-            continue
-        else:
-            score += bag_of_words[word]
-            count += 1
-
-    if count == 0:
-        return 0
-    else:
-        return score / count
+#     for word in sentence:
+#         if word in STOPWORDS:
+#             continue
+#         else:
+#             score += bag_of_words[word]
+#             count += 1
+
+#     if count == 0:
+#         return 0
+#     else:
+#         return score / count
 
-
-def compute_rouge_abstract_score(sentence, abstract):
-    """
-    Computes the ROUGE score of the given sentence compared to the given abstract.
-    :param sentence: the sentence to compute the ROUGE score for, as a list of words.
-    :param abstract: the abstract of the paper to compute the ROUGE score against, as a list of strings.
-    :return: the ROUGE score of the sentence compared to the abstract.
-    """
-    r = Rouge()
-    return r.calc_score([" ".join(sentence)], abstract)
-
-
-def calculate_document_tf_idf(sentence, paper_bag_of_words):
-    """
-    Computes the TF-IDF score in relation to the document - using the words from the sentence as Term Frequency (TF) and
-    total words in the paper as Document Frequency (IDF).
-    :param sentence: the sentence to calculate the score for, as a list of words.
-    :param paper_bag_of_words: bag of words representation of the paper, as a dictionary.
-    :return: the document-based TF-IDF score of the sentence.
-    """
-    # Sanity check
-    assert(len(paper_bag_of_words) > 0)
-
-    sentence_bag_of_words = defaultdict(float)
-    for word in sentence:
-
-        if word in STOPWORDS:
-            continue
-        else:
-            sentence_bag_of_words[word] += 1.0
-
-    sent_tf_idf = 0
-    length = 0
-
-    for word in sentence:
-
-        if word in STOPWORDS:
-            continue
-
-        tf = sentence_bag_of_words[word]
-
-        # Add 1 to the denominator to prevent division by 0
-        idf = np.log(len(paper_bag_of_words) / (paper_bag_of_words[word] + 1))
-
-        tf_idf = tf * idf
-
-        sent_tf_idf += tf_idf
-
-        length += 1
-
-    if length == 0:
-        return 0
-    else:
-        return sent_tf_idf / length
-
-
-def calculate_features(sentence, bag_of_words, document_wordcount, keyphrases, abstract, title, section):
-    """
-    Calculates the features for a sentence.
-    :param sentence: the sentence to calculate features for, as a list of words.
-    :param bag_of_words: a dictionary bag of words representation for the paper, keys are words vals are counts.
-    :param document_wordcount: count of how many different papers each word occurs in.
-    :param keyphrases: the keyphrases of the paper
-    :param shorter: returns a shorter list of features
-    :param abstract: the abstract of the paper as a list of strings
-    :param title: the title of the paper as a string
-    :param section: the section of the paper the sentence came from
-    :return: a vector of features for the sentence.
-    """
-    # Calculate features
-    abstract_rouge_score = compute_rouge_abstract_score(sentence, abstract)
-    tf_idf = calculate_tf_idf(sentence, document_wordcount, bag_of_words)
-    document_tf_idf = calculate_document_tf_idf(sentence, bag_of_words)
-    keyphrase_score = calculate_keyphrase_score(sentence, keyphrases)
-    title_score = calculate_title_score(sentence, set([x for x in title if x not in STOPWORDS]))
-    sent_len = len(sentence)
-    numeric_count = len([word for word in sentence if is_number(word)])
-    sec = -1
-
-    if "HIGHLIGHT" in section:
-        sec = HIGHLIGHT
-    elif "ABSTRACT" in section:
-        sec = ABSTRACT
-    elif "INTRODUCTION" in section:
-        sec = INTRODUCTION
-    elif "RESULT" in section or "DISCUSSION" in section:
-        sec = RESULT_DISCUSSION
-    elif "CONCLUSION" in section:
-        sec = CONCLUSION
-    elif "METHOD" in section:
-        sec = METHOD
-    else:
-        sec = OTHER
-
-    return abstract_rouge_score, tf_idf, document_tf_idf, keyphrase_score, title_score, numeric_count, \
-               sent_len, sec
-
-
-def paper2vec(paper, model, metadata):
-    """
-    Converts a paper into a list of vectors, one vector for each sentence.
-    :param paper: the paper in the form of a dictionary. The keys of the dictionary are the sections of the paper, and
-                  the values are a list of lists, where each list is a list of words corresponding to a sentence in
-                  that section.
-    :param model: the word2vec model used to transform the paper into a vector.
-    :param metadata: dictionaries containing metadata about the paper.
-    :return: the paper in the form of a dictionary, the key being the section and the values being a list of vectors,
-             with each vector corresponding to a sentence from that part of the paper.
-    """
-    stopwords = read_stopwords()
-    new_paper = defaultdict(None)
-
-    for section, text in paper.iteritems():
-        section_as_vector = []
-        section_text = []
-        pos = text[1]
-        text = text[0]
-        for sentence in text:
-            if "HIGHLIGHTS" in section:
-                sentence_vec = sentence2vec(sentence, model, stopwords, metadata, HIGHLIGHT, False)
-            elif "ABSTRACT" in section:
-                sentence_vec = sentence2vec(sentence, model, stopwords, metadata, ABSTRACT, False)
-            elif "INTRODUCTION" in section:
-                sentence_vec = sentence2vec(sentence, model, stopwords, metadata, INTRODUCTION, False)
-            elif "RESULT" in section or "DISCUSSION" in section:
-                sentence_vec = sentence2vec(sentence, model, stopwords, metadata, RESULT_DISCUSSION, False)
-            elif "CONCLUSION" in section:
-                sentence_vec = sentence2vec(sentence, model, stopwords, metadata, CONCLUSION, False)
-            else:
-                sentence_vec = sentence2vec(sentence, model, stopwords, metadata, OTHER, False)
-            section_as_vector.append(sentence_vec)
-            section_text.append(sentence)
-        new_paper[section] = (section_text, section_as_vector, pos)
-    return new_paper
-
-
-def sentence2vec(sentence, model=WORD2VEC, stopwords=STOPWORDS, metadata=None, section=None, wordvecs_only=True):
-    """
-    Changes a sentence into a vector by averaging the word vectors of every non-stopword word in the sentence.
-    :param sentence: the sentence to turn into a vector, as a list of words
-    :param model: the word2vec model to use to convert words to vectors
-    :param stopwords: stopwords to not include in the averaging of each sentence.
-    :param metadata: dictionaries of metadata for the paper.
-    :param section: the section of the paper the sentence occurs in.
-    :param wordvecs_only: will turn a sentence into a vector using only the the word vectors from the model, no extra
-                          features.
-    :return: the sentence in vector representation
-    """
-    # The shape of the model, used to get the number of features and its vocab
-    model_shape = model.syn0.shape
-    vocab = set(model.index2word)
-
-    # The array that will be used to calculate the average word vector
-    average = np.zeros((model_shape[1]), dtype="float32")
-    total_word_count = 0
-
-    for word in sentence:
-
-        if word in stopwords:
-            continue
-
-        if word in vocab:
-            word_rep = model[word]
-            average += word_rep
-            total_word_count += 1
-
-    if total_word_count == 0:
-        total_word_count = 1
-
-    average = np.divide(average, total_word_count)
-
-    sentence_vec = average
-
-    return sentence_vec
-
-
-def abstract2vector(abstract):
-    """
-    Changes the abstract into a single averaged vector.
-    :param abstract: the abstract to turn into a vector
-    :return: a single vector representing the abstract
-    """
-    abstract_vecs = [sentence2vec(x) for x in abstract]
-    avg = np.mean(abstract_vecs, axis=0)
-    return avg
-
-
-def read_paper_as_vectors(filename, model):
-    """
-    Reads in a paper into a dictionary in vector format.
-    :param filename: the paper to read, filename only not a path.
-    :param model: the word2vec model to use to convert the paper to a vector.
-    :return: a dictionary of form (section: (text, text as a list of vectors, section position in paper))
-    """
-    paper = read_in_paper(filename, sentences_as_lists=True, preserve_order=True)
-    metadata = create_paper_dictionaries(filename=filename) + load_global_word_count()
-    return paper2vec(paper, model, metadata)
-
-
-def load_doubledataset_classification_model():
-    """
-    Loads the trained classification model for the DoubleDataset classifier.
-    :return: the trained classification model.
-    """
-    with open(DD_CLASSIFICATION_MODEL_LOC_FEATS, "rb") as f:
-        features = pickle.load(f)
-
-    with open(DD_CLASSIFICATION_MODEL_LOC_VECS, "rb") as f:
-        vectors = pickle.load(f)
-
-    return vectors, features
-
-
-def load_word2vec_classification_model():
-    """
-    Loads the trained classification model for the Word2Vec classifier.
-    :return: the trained classification model.
-    """
-    with open(W2V_CLASSIFICATION_MODEL_LOC, "rb") as f:
-        model = pickle.load(f)
-
-    return model
-
-
-def check_summary_sentences(summary_sentences, sentence):
-    """
-    Checks whether sentence is in summary_sentences.
-    :param summary_sentences: a list of lists, each list corresponding to a tokenized sentence (the sentence is a list
-                              of words)
-    :param sentence: a tokenized sentence to check if whether it is in summary_sentences or not
-    :return: True if sentence is in summary_sentences, False otherwise
-    """
-    for sum_sentence in summary_sentences:
-        in_summary = SENTENCE_COMPARATOR_OBJ.compare_sentences(sum_sentence, sentence, STOPWORDS, tokenized=True)
-
-        if in_summary == 1:
-            return True
-
-    return False
-
-
-def pickle_list(list_to_pickle, write_location):
-    """
-    Pickles a list - writes it out in Python's pickle format at the specified location.
-    :param list_to_pickle: the list to persist.
-    :param write_location: the location to write the list to.
-    """
-    with open(write_location, "wb") as f:
-        pickle.dump(list_to_pickle, f)
-
-
-def load_pickled_object(object_location):
-    """
-    Loads a pickled object from a pickle file.
-    :param object_location: the location of the pickle file to read from
-    :return: the object read back in
-    """
-    with open(object_location, "rb") as f:
-        obj = pickle.load(f)
-    return obj
-
-
-def numpy_save(list_to_save, write_location):
-    """
-    Saves a list using the numpy "Save" function which is slightly faster than pickling.
-    :param list_to_save: the list to persist.
-    :param write_location: the location to write the list to.
-    """
-    np.save(write_location, list_to_save)
-
-
-def numpy_load(read_location):
-    """
-    Reads a list stored with numpy.save()
-    :param read_location: the location to read the list from
-    :return: the list
-    """
-    return np.load(read_location)
-
-
-def read_section_titles():
-    """
-    Reads the section titles permitted in the paper.
-    :return: A set of the permitted titles.
-    """
-    return set(Reader().open_file(BASE_DIR + "/Data/Utility_Data/permitted_titles.txt"))
-
-# The title of sections permitted in papers
-SECTION_TITLES = read_section_titles()
-
-
-def read_definite_non_summary_section_titles():
-    """
-    Reads the list of sections titles from which summary statements are very rare to come from.
-    :return: the list of such section titles.
-    """
-    return set(Reader().open_file(BASE_DIR + "/Data/Utility_Data/definite_non_summary_titles.txt"))
+
+# def compute_rouge_abstract_score(sentence, abstract):
+#     """
+#     Computes the ROUGE score of the given sentence compared to the given abstract.
+#     :param sentence: the sentence to compute the ROUGE score for, as a list of words.
+#     :param abstract: the abstract of the paper to compute the ROUGE score against, as a list of strings.
+#     :return: the ROUGE score of the sentence compared to the abstract.
+#     """
+#     r = Rouge()
+#     return r.calc_score([" ".join(sentence)], abstract)
+
+
+# def calculate_document_tf_idf(sentence, paper_bag_of_words):
+#     """
+#     Computes the TF-IDF score in relation to the document - using the words from the sentence as Term Frequency (TF) and
+#     total words in the paper as Document Frequency (IDF).
+#     :param sentence: the sentence to calculate the score for, as a list of words.
+#     :param paper_bag_of_words: bag of words representation of the paper, as a dictionary.
+#     :return: the document-based TF-IDF score of the sentence.
+#     """
+#     # Sanity check
+#     assert(len(paper_bag_of_words) > 0)
+
+#     sentence_bag_of_words = defaultdict(float)
+#     for word in sentence:
+
+#         if word in STOPWORDS:
+#             continue
+#         else:
+#             sentence_bag_of_words[word] += 1.0
+
+#     sent_tf_idf = 0
+#     length = 0
+
+#     for word in sentence:
+
+#         if word in STOPWORDS:
+#             continue
+
+#         tf = sentence_bag_of_words[word]
+
+#         # Add 1 to the denominator to prevent division by 0
+#         idf = np.log(len(paper_bag_of_words) / (paper_bag_of_words[word] + 1))
+
+#         tf_idf = tf * idf
+
+#         sent_tf_idf += tf_idf
+
+#         length += 1
+
+#     if length == 0:
+#         return 0
+#     else:
+#         return sent_tf_idf / length
+
+
+# def calculate_features(sentence, bag_of_words, document_wordcount, keyphrases, abstract, title, section):
+#     """
+#     Calculates the features for a sentence.
+#     :param sentence: the sentence to calculate features for, as a list of words.
+#     :param bag_of_words: a dictionary bag of words representation for the paper, keys are words vals are counts.
+#     :param document_wordcount: count of how many different papers each word occurs in.
+#     :param keyphrases: the keyphrases of the paper
+#     :param shorter: returns a shorter list of features
+#     :param abstract: the abstract of the paper as a list of strings
+#     :param title: the title of the paper as a string
+#     :param section: the section of the paper the sentence came from
+#     :return: a vector of features for the sentence.
+#     """
+#     # Calculate features
+#     abstract_rouge_score = compute_rouge_abstract_score(sentence, abstract)
+#     tf_idf = calculate_tf_idf(sentence, document_wordcount, bag_of_words)
+#     document_tf_idf = calculate_document_tf_idf(sentence, bag_of_words)
+#     keyphrase_score = calculate_keyphrase_score(sentence, keyphrases)
+#     title_score = calculate_title_score(sentence, set([x for x in title if x not in STOPWORDS]))
+#     sent_len = len(sentence)
+#     numeric_count = len([word for word in sentence if is_number(word)])
+#     sec = -1
+
+#     if "HIGHLIGHT" in section:
+#         sec = HIGHLIGHT
+#     elif "ABSTRACT" in section:
+#         sec = ABSTRACT
+#     elif "INTRODUCTION" in section:
+#         sec = INTRODUCTION
+#     elif "RESULT" in section or "DISCUSSION" in section:
+#         sec = RESULT_DISCUSSION
+#     elif "CONCLUSION" in section:
+#         sec = CONCLUSION
+#     elif "METHOD" in section:
+#         sec = METHOD
+#     else:
+#         sec = OTHER
+
+#     return abstract_rouge_score, tf_idf, document_tf_idf, keyphrase_score, title_score, numeric_count, \
+#                sent_len, sec
+
+
+# def paper2vec(paper, model, metadata):
+#     """
+#     Converts a paper into a list of vectors, one vector for each sentence.
+#     :param paper: the paper in the form of a dictionary. The keys of the dictionary are the sections of the paper, and
+#                   the values are a list of lists, where each list is a list of words corresponding to a sentence in
+#                   that section.
+#     :param model: the word2vec model used to transform the paper into a vector.
+#     :param metadata: dictionaries containing metadata about the paper.
+#     :return: the paper in the form of a dictionary, the key being the section and the values being a list of vectors,
+#              with each vector corresponding to a sentence from that part of the paper.
+#     """
+#     stopwords = read_stopwords()
+#     new_paper = defaultdict(None)
+
+#     for section, text in paper.iteritems():
+#         section_as_vector = []
+#         section_text = []
+#         pos = text[1]
+#         text = text[0]
+#         for sentence in text:
+#             if "HIGHLIGHTS" in section:
+#                 sentence_vec = sentence2vec(sentence, model, stopwords, metadata, HIGHLIGHT, False)
+#             elif "ABSTRACT" in section:
+#                 sentence_vec = sentence2vec(sentence, model, stopwords, metadata, ABSTRACT, False)
+#             elif "INTRODUCTION" in section:
+#                 sentence_vec = sentence2vec(sentence, model, stopwords, metadata, INTRODUCTION, False)
+#             elif "RESULT" in section or "DISCUSSION" in section:
+#                 sentence_vec = sentence2vec(sentence, model, stopwords, metadata, RESULT_DISCUSSION, False)
+#             elif "CONCLUSION" in section:
+#                 sentence_vec = sentence2vec(sentence, model, stopwords, metadata, CONCLUSION, False)
+#             else:
+#                 sentence_vec = sentence2vec(sentence, model, stopwords, metadata, OTHER, False)
+#             section_as_vector.append(sentence_vec)
+#             section_text.append(sentence)
+#         new_paper[section] = (section_text, section_as_vector, pos)
+#     return new_paper
+
+
+# def sentence2vec(sentence, model=WORD2VEC, stopwords=STOPWORDS, metadata=None, section=None, wordvecs_only=True):
+#     """
+#     Changes a sentence into a vector by averaging the word vectors of every non-stopword word in the sentence.
+#     :param sentence: the sentence to turn into a vector, as a list of words
+#     :param model: the word2vec model to use to convert words to vectors
+#     :param stopwords: stopwords to not include in the averaging of each sentence.
+#     :param metadata: dictionaries of metadata for the paper.
+#     :param section: the section of the paper the sentence occurs in.
+#     :param wordvecs_only: will turn a sentence into a vector using only the the word vectors from the model, no extra
+#                           features.
+#     :return: the sentence in vector representation
+#     """
+#     # The shape of the model, used to get the number of features and its vocab
+#     model_shape = model.syn0.shape
+#     vocab = set(model.index2word)
+
+#     # The array that will be used to calculate the average word vector
+#     average = np.zeros((model_shape[1]), dtype="float32")
+#     total_word_count = 0
+
+#     for word in sentence:
+
+#         if word in stopwords:
+#             continue
+
+#         if word in vocab:
+#             word_rep = model[word]
+#             average += word_rep
+#             total_word_count += 1
+
+#     if total_word_count == 0:
+#         total_word_count = 1
+
+#     average = np.divide(average, total_word_count)
+
+#     sentence_vec = average
+
+#     return sentence_vec
+
+
+# def abstract2vector(abstract):
+#     """
+#     Changes the abstract into a single averaged vector.
+#     :param abstract: the abstract to turn into a vector
+#     :return: a single vector representing the abstract
+#     """
+#     abstract_vecs = [sentence2vec(x) for x in abstract]
+#     avg = np.mean(abstract_vecs, axis=0)
+#     return avg
+
+
+# def read_paper_as_vectors(filename, model):
+#     """
+#     Reads in a paper into a dictionary in vector format.
+#     :param filename: the paper to read, filename only not a path.
+#     :param model: the word2vec model to use to convert the paper to a vector.
+#     :return: a dictionary of form (section: (text, text as a list of vectors, section position in paper))
+#     """
+#     paper = read_in_paper(filename, sentences_as_lists=True, preserve_order=True)
+#     metadata = create_paper_dictionaries(filename=filename) + load_global_word_count()
+#     return paper2vec(paper, model, metadata)
+
+
+# def load_doubledataset_classification_model():
+#     """
+#     Loads the trained classification model for the DoubleDataset classifier.
+#     :return: the trained classification model.
+#     """
+#     with open(DD_CLASSIFICATION_MODEL_LOC_FEATS, "rb") as f:
+#         features = pickle.load(f)
+
+#     with open(DD_CLASSIFICATION_MODEL_LOC_VECS, "rb") as f:
+#         vectors = pickle.load(f)
+
+#     return vectors, features
+
+
+# def load_word2vec_classification_model():
+#     """
+#     Loads the trained classification model for the Word2Vec classifier.
+#     :return: the trained classification model.
+#     """
+#     with open(W2V_CLASSIFICATION_MODEL_LOC, "rb") as f:
+#         model = pickle.load(f)
+
+#     return model
+
+
+# def check_summary_sentences(summary_sentences, sentence):
+#     """
+#     Checks whether sentence is in summary_sentences.
+#     :param summary_sentences: a list of lists, each list corresponding to a tokenized sentence (the sentence is a list
+#                               of words)
+#     :param sentence: a tokenized sentence to check if whether it is in summary_sentences or not
+#     :return: True if sentence is in summary_sentences, False otherwise
+#     """
+#     for sum_sentence in summary_sentences:
+#         in_summary = SENTENCE_COMPARATOR_OBJ.compare_sentences(sum_sentence, sentence, STOPWORDS, tokenized=True)
+
+#         if in_summary == 1:
+#             return True
+
+#     return False
+
+
+# def pickle_list(list_to_pickle, write_location):
+#     """
+#     Pickles a list - writes it out in Python's pickle format at the specified location.
+#     :param list_to_pickle: the list to persist.
+#     :param write_location: the location to write the list to.
+#     """
+#     with open(write_location, "wb") as f:
+#         pickle.dump(list_to_pickle, f)
+
+
+# def load_pickled_object(object_location):
+#     """
+#     Loads a pickled object from a pickle file.
+#     :param object_location: the location of the pickle file to read from
+#     :return: the object read back in
+#     """
+#     with open(object_location, "rb") as f:
+#         obj = pickle.load(f)
+#     return obj
+
+
+# def numpy_save(list_to_save, write_location):
+#     """
+#     Saves a list using the numpy "Save" function which is slightly faster than pickling.
+#     :param list_to_save: the list to persist.
+#     :param write_location: the location to write the list to.
+#     """
+#     np.save(write_location, list_to_save)
+
+
+# def numpy_load(read_location):
+#     """
+#     Reads a list stored with numpy.save()
+#     :param read_location: the location to read the list from
+#     :return: the list
+#     """
+#     return np.load(read_location)
+
+
+# def read_section_titles():
+#     """
+#     Reads the section titles permitted in the paper.
+#     :return: A set of the permitted titles.
+#     """
+#     return set(Reader().open_file(BASE_DIR + "/Data/Utility_Data/permitted_titles.txt"))
+
+# # The title of sections permitted in papers
+# SECTION_TITLES = read_section_titles()
+
+
+# def read_definite_non_summary_section_titles():
+#     """
+#     Reads the list of sections titles from which summary statements are very rare to come from.
+#     :return: the list of such section titles.
+#     """
+#     return set(Reader().open_file(BASE_DIR + "/Data/Utility_Data/definite_non_summary_titles.txt"))
 
 
 def write_summary(location, summary_as_list, filename):
@@ -907,7 +910,7 @@ def write_summary(location, summary_as_list, filename):
 
     raw_sentences = [x for x, _ in summary_as_list]
 
-    with open(location + "Text/" + filename + ".txt", "wb") as f:
+    with open(location + "Text/" + filename + ".txt", "w") as f:
         for sentence in raw_sentences:
             f.write(sentence)
             f.write("\n")
@@ -920,7 +923,7 @@ def write_gold(location, gold_as_list, filename):
     :param gold_as_list: the gold summary as a list of sentences where each sentence is a list of words.
     :param filename: the name of the file to write.
     """
-    with open(location + "Gold/" + filename, "wb") as f:
+    with open(location + "Gold/" + filename, "w") as f:
         for word_list in gold_as_list:
             sentence = " ".join(word_list)
             f.write(sentence)

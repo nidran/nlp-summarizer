@@ -9,7 +9,7 @@ import time
 import numpy as np
 from Summariser import Summariser
 #from DataTools import useful_functions
-from DataTools.useful_functions import paper_tokenize, printlist, wait, BASE_DIR, PAPER_SOURCE, read_in_paper, write_gold, write_summary, loading_bar
+from DataTools.useful_functions import paper_tokenize, printlist, wait, BASE_DIR, PAPER_SOURCE, read_in_paper, write_gold, write_summary, loading_bar, PAPER_SOURCE_WH
 from operator import itemgetter
 from sklearn import linear_model
 from Evaluation.rouge import Rouge
@@ -70,7 +70,7 @@ class TextRankWrapperSummariser(Summariser):
         Prepares the paper for summarisation.
         :return: The paper in a form suitable for summarisation
         """
-        paper_loc = PAPER_SOURCE + filename
+        paper_loc = PAPER_SOURCE_WH + filename
         with open(paper_loc, "r") as f:
 
             plaintext_paper = []

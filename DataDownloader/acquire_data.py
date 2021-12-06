@@ -2,9 +2,9 @@
 
 import os
 import sys
-sys.path.insert(0, "/Users/edcollins/Documents/CS/4thYearProject/Code")
-from Dev.DataDownloader.sciencedirect_collect import downloadArticlesFromList
-from Dev.DataDownloader.xml_utils import parseXMLAll
+sys.path.insert(0, "/Users/arnabgupta/Documents/NYU/Coursework/Fall 21/2590 - Natural Language Processing/Project/scientific-paper-summarisation/")
+from DataDownloader.sciencedirect_collect import downloadArticlesFromList
+from DataDownloader.xml_utils import parseXMLAll
 
 # =========================
 
@@ -17,7 +17,7 @@ from Dev.DataDownloader.xml_utils import parseXMLAll
 # ====> (1) : The List of Papers to Download
 #       The location of the text file containing the URLs of the papers to download. This will be read and each of the
 #       papers downloaded. The default setting assumes you are running this code from the main project folder.
-LOCATION_OF_PAPER_URLS_LIST = "DataDownloader/cspubsum_test_ids.txt"
+LOCATION_OF_PAPER_URLS_LIST = "DataDownloader/cspubsum_ids.txt"
 
 # ====> (2) : The Place to Store the Papers
 #       The directory in which to stored the downloaded papers, which will be in XML formet. The default assumes you are
@@ -42,7 +42,7 @@ LOCATION_TO_STORE_PARSED_PAPERS = "Data/Parsed_Papers/"
 #       Also note that you must run this code on the network of an institution which is subscribed to ScienceDirect
 #       (most universities) otherwise only the title, abstract and keywords of each paper will be downloaded rather than
 #       the whole paper.
-API_KEY = ""
+API_KEY = "eae43f11358e7e9e8b39da7a4266debc"
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

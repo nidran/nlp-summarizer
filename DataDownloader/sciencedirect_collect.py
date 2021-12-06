@@ -12,6 +12,7 @@ import argparse
 import io
 import time
 import numpy as np
+import requests
 
 # Guide to Elsevier article retrieval: http://dev.elsevier.com/tecdoc_text_mining.html
 # Step 0: obtain API key: https://dev.elsevier.com/user/login
@@ -102,8 +103,12 @@ def downloadArticlesFromList(inlist, exarticles, outfpath, apikey):
         piir = "http://api.elsevier.com/content/article/PII:" + pii + "?httpAccept=text/xml&APIKey=" + apikey
 
         download_start_time = time.time()
-        local_filename, headers = urllib.request.urlretrieve(piir)
-        shutil.copy(local_filename, outfpath + pii + ".xml")
+        # local_filename, headers = urllib.request.urlretrieve(piir)
+        # shutil.copy(local_filename, outfpath + pii + ".xml")
+        r = requests.get(piir)
+        with open(outfpath + pii + ".xml", "wb") as fp:
+            fp.write(r.content)
+
         download_time = time.time() - download_start_time
         if len(download_times) < 50:
             download_times.append(download_time)

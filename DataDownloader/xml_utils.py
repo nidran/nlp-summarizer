@@ -4,11 +4,13 @@
 # ====> XML PARSING CLASS
 
 import sys
-sys.path.insert(0, "/Users/edcollins/Documents/CS/4thYearProject/Code")
+sys.path.insert(0, "/Users/arnabgupta/Documents/NYU/Coursework/Fall 21/2590 - Natural Language Processing/Project/scientific-paper-summarisation")
 import xml.sax
 import collections
 import os
 from operator import itemgetter
+
+output_loc = '/Users/arnabgupta/Documents/NYU/Coursework/Fall 21/2590 - Natural Language Processing/Project/scientific-paper-summarisation/Data/Parsed_wo_highlights/'
 
 section_title_counts = collections.defaultdict(float)
 
@@ -38,6 +40,7 @@ class PubHandler(xml.sax.ContentHandler):
         self.inpara = False
         self.textbuilder = []
         self.textbuilder_abstract = []
+        self.summary = []
         self.paraid = 0
         self.inabstract = False
         self.textbuilder_title = []
@@ -115,6 +118,7 @@ class PubHandler(xml.sax.ContentHandler):
        if tag == "ce:bib-reference":
            self.inbib = True
 
+
         # Test
        if tag == "ce:section-title":
           self.insectiontitle = True
@@ -123,12 +127,12 @@ class PubHandler(xml.sax.ContentHandler):
    def endElement(self, tag):
        # Call when an elements ends
        self.CurrentData = ""
-       if tag == "ce:abstract" or tag == "dc:description":
+       if tag == "ce:abstract":
            self.highlightflag = False
            self.inabstract = False
            if len(self.textbuilder_abstract) > 0:
                para = "".join(self.textbuilder_abstract)
-               self.abstract = para
+               self.abstract += para
                self.textbuilder_abstract = []
        elif tag == "ce:para":
            if len(self.textbuilder_highlight) > 0:
@@ -183,7 +187,9 @@ class PubHandler(xml.sax.ContentHandler):
            self.authors.append(content)
        elif self.CurrentData == "dcterms:subject":
            self.keyphrases.append(content)
-       elif (self.CurrentData == "dc:description") or (self.inabstract == True and self.highlightflag == False):
+       elif (self.CurrentData == "dc:description"):
+           self.summary.append(content)
+       elif (self.inabstract == True and self.highlightflag == False):
            if content.startswith("Abstract"):
                content = content.replace("Abstract", "", 1)
            self.textbuilder_abstract.append(content)
@@ -268,38 +274,57 @@ def parseXML(fpath, write_loc):
 
       # Open the file
       f = open(write_loc + name, "w")
+      fp = open(output_loc + name, 'w')
 
       # Write the title
       title = "@&#MAIN-TITLE@&#" + Handler.title + "\n\n"
       f.write(title)
+      fp.write(title)
 
       # Write the highlights
       highlights_title = "@&#HIGHLIGHTS@&#\n\n"
       f.write(highlights_title)
-      for h in Handler.highlights:
+      if len(Handler.highlights):
+        for h in Handler.highlights:
           string = h + "\n\n"
           f.write(string)
-
+      elif len(Handler.summary):
+          for h in Handler.summary:
+            string = h
+            f.write(string)
+      elif len(Handler.abstract):
+          string = Handler.abstract + "\n\n"
+          f.write(string)
+      else:
+          pass
+      
+      f.write("\n")
       # Write the keyphrases
       keyphrases_title = "@&#KEYPHRASES@&#\n\n"
       f.write(keyphrases_title)
+      fp.write(keyphrases_title)
       for k in Handler.keyphrases:
           string = k + "\n\n"
           f.write(string)
+          fp.write(string)
 
       # Write the abstract
       abstract_title = "@&#ABSTRACT@&#\n\n"
       f.write(abstract_title)
+      fp.write(abstract_title)
       string = Handler.abstract + "\n\n"
       f.write(string)
+      fp.write(string)
 
       # Write the main test
       for n, t in Handler.text.items():
         string = t + "\n\n"
         f.write(string)
+        fp.write(string)
       
       # Close the file
       f.close()
+      fp.close()
 
       if DEBUG:
         input("Press enter to continue...")
@@ -326,7 +351,7 @@ def parseXMLAll(dirpath, write_loc):
 if __name__ == '__main__':
     SOURCE_DIR = "/DataDownloader/Test2/"
     WRITE_DIR = "/DataDownloader/Test3/"
-    BASE_DIR = "/Users/edcollins/Documents/CS/4thYearProject/Code/Dev"
+    BASE_DIR = "/Users/arnabgupta/Documents/NYU/Coursework/Fall 21/2590 - Natural Language Processing/Project/scientific-paper-summarisation/Dev"
     parseXMLAll(BASE_DIR + SOURCE_DIR, BASE_DIR + WRITE_DIR)
     exit()
 
