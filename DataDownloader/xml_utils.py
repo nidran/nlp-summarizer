@@ -50,6 +50,7 @@ class PubHandler(xml.sax.ContentHandler):
         self.textbuilder_bib = []
         self.inbib = False
 
+
         # Class settings
         self.DEBUG = False
 
@@ -226,7 +227,7 @@ def parseXML(fpath, write_loc):
 
     OUTPUT = True
     DEBUG = False
-
+    empty = True
     if not os.path.isdir(write_loc):
         print(">>>> The write location needs to be a directory <<<<")
         print("Please change write path to a directory and try again.")
@@ -284,14 +285,17 @@ def parseXML(fpath, write_loc):
       # Write the highlights
       highlights_title = "@&#HIGHLIGHTS@&#\n\n"
       f.write(highlights_title)
+      # fp.write(highlights_title)
       if len(Handler.highlights):
         for h in Handler.highlights:
           string = h + "\n\n"
           f.write(string)
+          # fp.write(string)
       elif len(Handler.summary):
           for h in Handler.summary:
             string = h
             f.write(string)
+            # fp.write(string)
       elif len(Handler.abstract):
           string = Handler.abstract + "\n\n"
           f.write(string)
@@ -319,6 +323,8 @@ def parseXML(fpath, write_loc):
       # Write the main test
       for n, t in Handler.text.items():
         string = t + "\n\n"
+        if len(t) > 0:
+            empty = False
         f.write(string)
         fp.write(string)
       
@@ -326,8 +332,14 @@ def parseXML(fpath, write_loc):
       f.close()
       fp.close()
 
+
       if DEBUG:
         input("Press enter to continue...")
+
+      if empty:
+        # print(filename)
+        return 1
+      return 0
 
 def parseXMLAll(dirpath, write_loc):
     """

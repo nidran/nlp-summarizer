@@ -47,8 +47,8 @@ for filename in os.listdir(gold_dir):
     generated_list.append(generated)
 
     
-    # if count == 20000:
-    #     break
+    if count == 200:
+        break
 
     rouge_per = scorer.score(generated_str, gold_str)
     bleu_per = sentence_bleu([gold], generated)
@@ -59,8 +59,17 @@ for filename in os.listdir(gold_dir):
         fp.write(str(results))
 
 
-    total_2 += rouge_per['rougeLsum'].fmeasure
+    total_2 += rouge_per['rouge1'].fmeasure
 
 print("Rouge Score: {}".format(total_2/count))
 
-print("Bleu score of corpus: {}".format(corpus_bleu(gold_list, generated_list)))
+weights=(1, 1, 1, 1)
+print("Bleu score of corpus: {}".format(corpus_bleu(gold_list, generated_list, weights=weights)))
+weights=(1, 1, 0, 0)
+print("Bleu score of corpus: {}".format(corpus_bleu(gold_list, generated_list, weights=weights)))
+weights=(1, 0, 0, 0)
+print("Bleu score of corpus: {}".format(corpus_bleu(gold_list, generated_list, weights=weights)))
+weights=(1, 0, 0, 0.1)
+print("Bleu score of corpus: {}".format(corpus_bleu(gold_list, generated_list, weights=weights)))
+weights=(0, 0, 0, 1)
+print("Bleu score of corpus: {}".format(corpus_bleu(gold_list, generated_list, weights=weights)))

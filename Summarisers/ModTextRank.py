@@ -54,9 +54,9 @@ class TextRankWrapperSummariser(Summariser):
 
         write_summary(SUMMARY_WRITE_LOC, summary, filename.strip(".txt"))
 
-        for sentence in summary:
-            print(sentence)
-            print()
+        # for sentence in summary:
+            # print(sentence)
+            # print()
 
     def load_model(self):
         """

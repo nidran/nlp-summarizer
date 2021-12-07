@@ -18,6 +18,7 @@ from DataDownloader.xml_utils import parseXMLAll
 #       The location of the text file containing the URLs of the papers to download. This will be read and each of the
 #       papers downloaded. The default setting assumes you are running this code from the main project folder.
 LOCATION_OF_PAPER_URLS_LIST = "DataDownloader/cspubsum_ids.txt"
+LOCATION_OF_PAPER_URLS_LIST = "DataDownloader/papers_final.txt"
 
 # ====> (2) : The Place to Store the Papers
 #       The directory in which to stored the downloaded papers, which will be in XML formet. The default assumes you are
