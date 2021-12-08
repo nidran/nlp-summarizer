@@ -1,7 +1,14 @@
 import os
 from rouge import Rouge
 from rouge_score import rouge_scorer
-from nltk.translate.bleu_score import sentence_bleu, corpus_bleu
+from nltk.translate.bleu_score import sentence_bleu, corpus_bleu, SmoothingFunction
+from nltk.util import ngrams
+import math
+import sys
+import warnings
+from collections import Counter
+from fractions import Fraction
+
 
 gold_dir = "/Users/arnabgupta/Documents/NYU/Coursework/Fall 21/2590 - Natural Language Processing/Project/scientific-paper-summarisation/Data/Generated_Data/Generated_Summaries/TextRank/Gold/"
 generated_dir = "/Users/arnabgupta/Documents/NYU/Coursework/Fall 21/2590 - Natural Language Processing/Project/scientific-paper-summarisation/Data/Generated_Data/Generated_Summaries/TextRank/Text/"
@@ -14,6 +21,7 @@ scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL', 'rougeLsum'], T
 count = 0
 total_1 = 0
 total_2 = 0
+total_bleu = 0
 
 gold_list = []
 generated_list = []
@@ -47,11 +55,11 @@ for filename in os.listdir(gold_dir):
     generated_list.append(generated)
 
     
-    if count == 200:
-        break
-
+    # if count == 200:
+    #     break
     rouge_per = scorer.score(generated_str, gold_str)
-    bleu_per = sentence_bleu([gold], generated)
+
+    bleu_per = sentence_bleu([gold], generated, weights=(1, 0.2, 0, 0), smoothing_function=SmoothingFunction(epsilon=1e-2).method1)
 
     results = {'rouge': rouge_per, 'bleu': bleu_per}
 
@@ -59,17 +67,10 @@ for filename in os.listdir(gold_dir):
         fp.write(str(results))
 
 
-    total_2 += rouge_per['rouge1'].fmeasure
+    total_2 += rouge_per['rougeL'].fmeasure
+    # total_bleu += bleu_per
 
-print("Rouge Score: {}".format(total_2/count))
+print("Rouge Score (rougeL): {}".format(total_2/count))
 
-weights=(1, 1, 1, 1)
-print("Bleu score of corpus: {}".format(corpus_bleu(gold_list, generated_list, weights=weights)))
-weights=(1, 1, 0, 0)
-print("Bleu score of corpus: {}".format(corpus_bleu(gold_list, generated_list, weights=weights)))
-weights=(1, 0, 0, 0)
-print("Bleu score of corpus: {}".format(corpus_bleu(gold_list, generated_list, weights=weights)))
-weights=(1, 0, 0, 0.1)
-print("Bleu score of corpus: {}".format(corpus_bleu(gold_list, generated_list, weights=weights)))
-weights=(0, 0, 0, 1)
-print("Bleu score of corpus: {}".format(corpus_bleu(gold_list, generated_list, weights=weights)))
+weights=(1, 0.2, 0, 0)
+print("Smoothed Bleu score of corpus: {}".format(corpus_bleu(gold_list, generated_list, weights=weights, smoothing_function=SmoothingFunction(epsilon=1e-2).method1)))
